@@ -77,7 +77,7 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
             //$httpRequest->getOptions()->set(CURLOPT_SSLVERSION, 6); // CURL_SSLVERSION_TLSv1_2 for libcurl < 7.35
             //$httpResponse = $httpRequest->send();
             // Empty response body should be parsed also as and empty array
-            $body = $httpResponse->getBody(true);
+            $body = $httpResponse->getBody()->getContents();
             $jsonToArrayResponse = !empty($body) ? json_decode($body, true) : array();
             return $this->response = $this->createResponse($jsonToArrayResponse, $httpResponse->getStatusCode());
         } catch (\Exception $e) {
@@ -90,19 +90,14 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
 
     public function toJSON($data, $options = 0)
     {
-        // Because of PHP Version 5.3, we cannot use JSON_UNESCAPED_SLASHES option
-        // Instead we would use the str_replace command for now.
-        // TODO: Replace this code with return json_encode($this->toArray(), $options | 64); once we support PHP >= 5.4
-        if (version_compare(phpversion(), '5.4.0', '>=') === true) {
-            return json_encode($data, $options | 64);
-        }
-        return str_replace('\\/', '/', json_encode($data, $options));
+	    return json_encode($data, $options | 64);
     }
 
     public function getToken()
     {
         return base64_encode($this->getAPIKey().":");
     }
+    
     // essenstial parameters
     public function getName()
     {
